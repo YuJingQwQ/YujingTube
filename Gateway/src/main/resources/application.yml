@@ -1,0 +1,29 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: yujingtube_product_route
+          uri: lb://yujingtube-product
+          predicates:
+            - Host=yujing.icu
+
+        - id: yujingmail_thirdparty_route
+          uri: lb://yujingtube-thirdparty
+          predicates:
+            - Host=thirdparty.yujing.icu
+
+        - id: yujingmail_user_route
+          uri: lb://yujingtube-user
+          predicates:
+            - Host=user.yujing.icu
+
+        - id: yujingmail_admin_route
+          uri: lb://yujingtube-admin
+          predicates:
+            - Host=admin.yujing.icu
+
+
+    nacos:
+      server-addr: 192.168.89.128:8848
+      username: nacos
+      password: nacos

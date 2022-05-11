@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="icu.yujing.product.app.product.dao.VideoDao">
+    <update id="videoPlayIncrease">
+        UPDATE product_video
+        <set>
+            views = views + 1
+        </set>
+        WHERE id = #{videoId}
+    </update>
+    <select id="listRandomlyByZoneIdLimitByCount"
+            resultType="icu.yujing.product.app.product.entity.po.VideoPo">
+        SELECT id, user_id, title, type, zone_id, cover_url, releasing_date
+        FROM product_video
+        WHERE status = 2 and is_deleted = 0
+        <if test="zoneId != null">
+            and zone_id = #{zoneId}
+        </if>
+        ORDER BY rand() LIMIT #{count}
+    </select>
+    <select id="getTheVideosOfTheCurrentUser"
+            resultType="icu.yujing.product.app.product.entity.po.VideoPo">
+        SELECT id,
+        user_id,
+        cover_url,
+        title,
+        type,
+        description,
+        releasing_date
+        FROM product_video
+        WHERE user_id = #{userId} AND is_deleted = 0
+        ORDER BY ${orderField}
+        <if test="orderType == 0">DESC</if>
+        <if test="orderType == 1">ASC</if>
+        LIMIT #{index},#{size}
+    </select>
+    <select id="listIdByIndexAndSize">
+        SELECT id
+        from product_video limit #{index},#{size}
+    </select>
+
+</mapper>

@@ -1,0 +1,69 @@
+spring:
+  datasource:
+    url: jdbc:mysql://192.168.89.128:3306/youtube_product?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: admin
+
+  cloud:
+    nacos:
+      server-addr: 192.168.89.128:8848
+    alibaba:
+      seata:
+        tx-service-group: my_test_tx_group
+
+  redis:
+    host: 192.168.89.128
+    port: 6379
+  rabbitmq:
+    host: 192.168.89.128
+    listener:
+      simple:
+        acknowledge-mode: manual
+    publisher-confirm-type: correlated
+    publisher-returns: true
+  elasticsearch:
+    rest:
+      username: elastic
+      password: 18718857472
+      connection-timeout: 10s
+      uris: 192.168.89.128:9200
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+  configuration:
+    map-underscore-to-camel-case: true
+logging:
+  level:
+    icu.yujing: debug
+
+seata:
+  config:
+    type: nacos
+    nacos:
+      server-addr: 192.168.89.128:8848
+      username: nacos
+      password: nacos
+  registry:
+    nacos:
+      application: seata-server
+      server-addr: 192.168.89.128:8848
+      group: SEATA_GROUP
+      username: nacos
+      password: nacos
+      cluster: default
+      namespace: public
+
+#设置feign客户端超时时间(OpenFeign默认支持ribbon)
+ribbon:
+  #指的是建立连接所用的时间，适用于网络状况正常的情况下,两端连接所用的时间
+  ReadTimeout: 10000
+  #指的是建立连接后从服务器读取到可用资源所用的时间
+  ConnectTimeout: 600000
