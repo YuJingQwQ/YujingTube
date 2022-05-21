@@ -35,9 +35,9 @@
         <if test="orderType == 1">ASC</if>
         LIMIT #{index},#{size}
     </select>
-    <select id="listIdByIndexAndSize">
+    <select id="listIdByIndexAndSize" resultType="long">
         SELECT id
-        from product_video limit #{index},#{size}
+        from product_video WHERE is_deleted = 0 limit #{index},#{size}
     </select>
 
 </mapper>

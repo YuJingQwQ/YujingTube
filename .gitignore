@@ -25,3 +25,6 @@ hs_err_pid*
 /.idea
 */target
 **/*.iml
+
+# 忽略阿里云配置文件
+Common/src/main/java/icu/yujing/common/properties/AliOssProperties.java
