@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="icu.yujing.product.app.product.dao.CommentOperationDao">
+
+    <select id="selectOne" resultType="icu.yujing.product.app.product.entity.po.CommentOperationPo">
+        SELECT comment_id,
+               user_id,
+               video_id,
+               operation,
+               is_deleted
+        FROM product_comment_operation
+        WHERE video_id = #{videoId}
+          and comment_id = #{commentId}
+          and user_id = #{userId}
+    </select>
+</mapper>

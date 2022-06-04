@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="icu.yujing.admin.app.user.dao.UserDao">
+
+    <update id="increaseVideoCount">
+        UPDATE user_info
+        <set>
+            videos = videos + 1
+        </set>
+        <where>id = #{userId}</where>
+    </update>
+    <update id="subtractVideoCount">
+        UPDATE user_info
+        <set>
+            videos = videos - 1
+        </set>
+        <where>id = #{userId}</where>
+    </update>
+</mapper>

@@ -1,0 +1,7 @@
+server:
+  port: 5002
+spring:
+  application:
+    name: yujingtube-user
+  messages:
+    encoding: UTF-8

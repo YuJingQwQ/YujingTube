@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: yujingtube-gateway
+
+server:
+  port: 5000
+
+logging:
+  level:
+    icu.yujing: debug
