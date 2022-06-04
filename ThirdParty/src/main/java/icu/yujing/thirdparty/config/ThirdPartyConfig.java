@@ -1,5 +1,6 @@
 package icu.yujing.thirdparty.config;
 
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.springframework.context.annotation.Configuration;
 
 /**
@@ -9,5 +10,6 @@ import org.springframework.context.annotation.Configuration;
  * @description:
  */
 @Configuration
+@EnableDubbo
 public class ThirdPartyConfig {
 }

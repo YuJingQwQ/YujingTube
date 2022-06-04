@@ -41,10 +41,15 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
         // 判断请求头是否携带jwt
         if (StringUtils.isEmpty(jwt)) {
             // 放行
-            currentThreadUser.set(new UserDetailsEntity());
-            filterChain.doFilter(request, response);
-            currentThreadUser.remove();
-            return;
+            try {
+                currentThreadUser.set(new UserDetailsEntity());
+                filterChain.doFilter(request, response);
+                return;
+            } catch (Exception e) {
+                throw e;
+            } finally {
+                currentThreadUser.remove();
+            }
         }
         Claims claims;
         try {
@@ -69,17 +74,22 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
             writer.close();
             return;
         }
-        UserDetailsEntity userDetailsEntity = JSON.parseObject(userDetailsJson, new TypeReference<UserDetailsEntity>() {
-        });
-        currentThreadUser.set(userDetailsEntity);
-        //存入SecurityContextHolder
-        //TODO 获取权限信息封装到Authentication中
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userDetailsEntity.getUser(), null, userDetailsEntity.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-        //放行
-        filterChain.doFilter(request, response);
-        // 清空当前线程的数据
-        currentThreadUser.remove();
+        try {
+            UserDetailsEntity userDetailsEntity = JSON.parseObject(userDetailsJson, new TypeReference<UserDetailsEntity>() {
+            });
+            currentThreadUser.set(userDetailsEntity);
+            //存入SecurityContextHolder
+            //TODO 获取权限信息封装到Authentication中
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(userDetailsEntity.getUser(), null, userDetailsEntity.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            //放行
+            filterChain.doFilter(request, response);
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            // 清空当前线程的数据
+            currentThreadUser.remove();
+        }
     }
 }

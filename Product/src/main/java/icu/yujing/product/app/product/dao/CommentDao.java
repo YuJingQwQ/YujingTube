@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import icu.yujing.product.app.product.entity.po.CommentPo;
 import icu.yujing.product.app.product.entity.vo.CommentVo;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import java.util.List;
  * @version: 1.0
  * @description:
  */
+@Repository
 public interface CommentDao extends BaseMapper<CommentPo> {
     List<CommentVo> getComments(@Param("videoId") Long videoId, @Param("index") Long index, @Param("size") Integer size);
 

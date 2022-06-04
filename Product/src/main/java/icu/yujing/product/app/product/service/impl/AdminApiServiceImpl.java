@@ -19,7 +19,9 @@ import icu.yujing.product.app.product.entity.to.ElasticSearchVideoTo;
 import icu.yujing.product.app.product.entity.vo.AuthorArticlesPageVo;
 import icu.yujing.product.feign.UserFeignService;
 import icu.yujing.user.entity.po.UserPo;
+import icu.yujing.user.service.UserApiService;
 import io.seata.spring.annotation.GlobalTransactional;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
@@ -52,8 +54,11 @@ public class AdminApiServiceImpl implements AdminApiService {
     @Autowired
     private VideoApiService videoApiService;
 
-    @Autowired
-    private UserFeignService userFeignService;
+    @DubboReference()
+    private UserApiService userApiService;
+
+//    @Autowired
+//    private UserFeignService userFeignService;
 
     @Override
     public Page<VideoPo> getArticlesOfAuthorsByAdmin(AuthorArticlesPageVo params) {
@@ -106,12 +111,14 @@ public class AdminApiServiceImpl implements AdminApiService {
         // 查询视频内容保存到elasticsearch
         VideoPo video = videoApiService.getOne(new QueryWrapper<VideoPo>().eq("id", articleId));
 
-        R<UserPo> userR = userFeignService.getUserInfo(video.getUserId());
-        if (userR.getCode() != 200) {
-            throw new MyTopException(ExceptionContent.DIY_EXCEPTION.getCode(), "获取用户信息失败");
-        }
-        UserPo author = userR.getDataOfJsonObject(new TypeReference<UserPo>() {
-        });
+        UserPo author = userApiService.getUserFromDatabase(video.getUserId());
+
+//        R<UserPo> userR = userFeignService.getUserInfo(video.getUserId());
+//        if (userR.getCode() != 200) {
+//            throw new MyTopException(ExceptionContent.DIY_EXCEPTION.getCode(), "获取用户信息失败");
+//        }
+//        UserPo author = userR.getDataOfJsonObject(new TypeReference<UserPo>() {
+//        });
 
         ElasticSearchVideoTo videoTo = new ElasticSearchVideoTo(articleId, video.getCoverUrl(), video.getTitle(), video.getDescription(), video.getReleasingDate(), author.getId(), author.getNickname(), author.getAvatar(), video.getZoneId());
         IndexRequest indexRequest = new IndexRequest(ElasticsearchConstant.VIDEO_DATABASE);

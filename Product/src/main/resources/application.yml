@@ -32,6 +32,44 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
 
+#  shardingsphere:
+#    # 配置一写多读数据源
+#    datasource:
+#      names: writer,read1,read2
+#      common:
+#        type: com.zaxxer.hikari.HikariDataSource
+#        driver-class-name: com.mysql.cj.jdbc.Driver
+#        username: root
+#        password: admin
+#      writer:
+#        type: com.zaxxer.hikari.HikariDataSource
+#        jdbc-url: jdbc:mysql://192.168.89.128:3306/youtube_product?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true&useSSL=false
+#        username: root
+#        password: admin
+#      read1:
+#        type: com.zaxxer.hikari.HikariDataSource
+#        jdbc-url: jdbc:mysql://192.168.89.128:4306/youtube_product?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true&useSSL=false
+#        username: root
+#        password: admin
+#      read2:
+#        type: com.zaxxer.hikari.HikariDataSource
+#        jdbc-url: jdbc:mysql://192.168.89.128:5306/youtube_product?characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true&useSSL=false
+#        username: root
+#        password: admin
+#
+#    rules:
+#      replica-query:
+#        data-sources:
+#          product-r-w-split:
+#            primary-data-source-name: writer
+#            replica-data-source-names: read1,read2
+#            load-balancer-name: ROUND_ROBIN
+##        load-balancers:
+##          product-r-balancer:
+##            type: ROUND_ROBIN
+#  main:
+#    allow-bean-definition-overriding: true
+
 mybatis-plus:
   global-config:
     db-config:
@@ -49,17 +87,18 @@ seata:
     type: nacos
     nacos:
       server-addr: 192.168.89.128:8848
+      namespace: d97ae271-b632-4464-bb1e-42a655c453bf
+      group: SEATA_GROUP
       username: nacos
       password: nacos
   registry:
     nacos:
       application: seata-server
       server-addr: 192.168.89.128:8848
+      namespace: d97ae271-b632-4464-bb1e-42a655c453bf
       group: SEATA_GROUP
       username: nacos
       password: nacos
-      cluster: default
-      namespace: public
 
 #设置feign客户端超时时间(OpenFeign默认支持ribbon)
 ribbon:
@@ -67,3 +106,12 @@ ribbon:
   ReadTimeout: 10000
   #指的是建立连接后从服务器读取到可用资源所用的时间
   ConnectTimeout: 600000
+
+dubbo:
+  application:
+    name: product-service
+    register-mode: instance
+  registry:
+    address: nacos://192.168.89.128:8848
+  consumer:
+    check: false

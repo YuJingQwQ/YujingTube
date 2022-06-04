@@ -26,3 +26,9 @@ feign:
       default:
         connectTimeout: 10000
         readTimeout: 5000
+dubbo:
+  application:
+    name: thirdparty-service
+
+  registry:
+    address: nacos://192.168.89.128:8848

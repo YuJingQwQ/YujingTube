@@ -5,6 +5,7 @@ import icu.yujing.product.app.product.dao.ZoneDao;
 import icu.yujing.product.app.product.service.ZoneApiService;
 import icu.yujing.product.app.product.entity.po.ZonePo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**

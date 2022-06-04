@@ -1,7 +1,10 @@
 package icu.yujing.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.user.entity.po.UserPo;
+
+import java.util.List;
 
 /**
  * @author: Cyqurt
@@ -10,4 +13,9 @@ import icu.yujing.user.entity.po.UserPo;
  * @description:
  */
 public interface UserApiService extends IService<UserPo> {
+    UserDetailsEntity getUserFromJwt();
+
+    List<UserPo> getAvatarsAndNicknamesOfUsers(long[] userIds);
+
+    UserPo getUserFromDatabase(Long userId);
 }

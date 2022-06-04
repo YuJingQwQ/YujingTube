@@ -53,17 +53,19 @@ seata:
     type: nacos
     nacos:
       server-addr: 192.168.89.128:8848
+      namespace: d97ae271-b632-4464-bb1e-42a655c453bf
+      group: SEATA_GROUP
       username: nacos
       password: nacos
   registry:
     nacos:
       application: seata-server
       server-addr: 192.168.89.128:8848
+      namespace: d97ae271-b632-4464-bb1e-42a655c453bf
       group: SEATA_GROUP
       username: nacos
       password: nacos
       cluster: default
-      namespace: public
 
 #设置feign客户端超时时间(OpenFeign默认支持ribbon)
 ribbon:
@@ -71,3 +73,10 @@ ribbon:
   ReadTimeout: 10000
   #指的是建立连接后从服务器读取到可用资源所用的时间
   ConnectTimeout: 600000
+
+dubbo:
+  application:
+    name: user-service
+    register-mode: instance
+  registry:
+    address: nacos://192.168.89.128:8848

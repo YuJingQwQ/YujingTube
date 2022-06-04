@@ -4,6 +4,7 @@ import icu.yujing.product.app.product.entity.po.VideoPo;
 import icu.yujing.product.app.product.service.VideoApiService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,11 @@ import java.util.Map;
 @Component
 public class VideoScheduleController {
 
+    @Lazy
     @Autowired
     private VideoApiService videoApiService;
 
+    @Lazy
     @Autowired
     private StringRedisTemplate redisTemplate;
 

@@ -8,6 +8,8 @@ import icu.yujing.product.app.product.entity.to.ElasticSearchVideoTo;
 import icu.yujing.product.app.product.service.VideoApiService;
 import icu.yujing.product.app.product.service.VideoSearchApiService;
 import icu.yujing.product.feign.UserFeignService;
+import icu.yujing.user.service.UserApiService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -18,6 +20,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -41,12 +44,6 @@ public class VideoSearchApiServiceImpl implements VideoSearchApiService {
 
     @Autowired
     private VideoApiService videoApiService;
-
-    @Autowired
-    private UserFeignService userFeignService;
-
-    @Autowired
-    private ThreadPoolExecutor executor;
 
     @Override
     public Page<ElasticSearchVideoTo> results(String query, Integer page) throws IOException, ExecutionException, InterruptedException {

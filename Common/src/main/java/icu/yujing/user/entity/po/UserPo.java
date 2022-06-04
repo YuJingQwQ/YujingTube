@@ -2,6 +2,8 @@ package icu.yujing.user.entity.po;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author: Cyqurt
  * @date: 2022/3/26
@@ -9,7 +11,7 @@ import lombok.Data;
  * @description:
  */
 @Data
-public class UserPo {
+public class UserPo implements Serializable {
     private Long id;
     private String nickname;
     private String avatar;

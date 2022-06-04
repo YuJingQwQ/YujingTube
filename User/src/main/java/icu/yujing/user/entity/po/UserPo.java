@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * @author: Cyqurt
  * @date: 2022/3/26
@@ -13,7 +15,7 @@ import lombok.Data;
  */
 @Data
 @TableName("user_info")
-public class UserPo {
+public class UserPo implements Serializable {
     @TableId
     private Long id;
     private String nickname;

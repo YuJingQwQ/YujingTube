@@ -28,6 +28,19 @@
             <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-spring-boot-starter</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-registry-nacos</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.apache.dubbo</groupId>
+                    <artifactId>dubbo-rpc-triple</artifactId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.springframework.cloud</groupId>
                     <artifactId>spring-cloud-starter-openfeign</artifactId>
                 </exclusion>

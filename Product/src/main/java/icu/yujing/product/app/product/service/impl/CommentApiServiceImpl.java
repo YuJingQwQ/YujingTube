@@ -15,6 +15,8 @@ import icu.yujing.product.app.product.entity.vo.CommentVo;
 import icu.yujing.product.app.product.entity.vo.UserCommentVo;
 import icu.yujing.product.feign.UserFeignService;
 import icu.yujing.user.entity.po.UserPo;
+import icu.yujing.user.service.UserApiService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -37,9 +39,11 @@ public class CommentApiServiceImpl extends ServiceImpl<CommentDao, CommentPo> im
     @Autowired
     private CommentDao commentDao;
 
-    @Lazy
-    @Autowired
-    private UserFeignService userFeignService;
+//    @Autowired
+//    private UserFeignService userFeignService;
+
+    @DubboReference
+    private UserApiService userApiService;
 
     @Autowired
     private CommentOperationApiService commentOperationApiService;
@@ -72,15 +76,18 @@ public class CommentApiServiceImpl extends ServiceImpl<CommentDao, CommentPo> im
             commentIds[index] = comment.getCommentId();
             index++;
         }
-        R<List<UserPo>> usersR = userFeignService.getAvatarsAndNicknamesOfUsers(theUserIdsOfTheComments);
-        if (usersR.getCode() != 200) {
-            // 待改进, 当获取不到用户头像时,前端使用空白头像等用来代替显示,而不是抛出异常
-            throw new MyTopException(88888, "查询数据失败");
-        }
+//        R<List<UserPo>> usersR = userFeignService.getAvatarsAndNicknamesOfUsers(theUserIdsOfTheComments);
+//        if (usersR.getCode() != 200) {
+//            // 待改进, 当获取不到用户头像时,前端使用空白头像等用来代替显示,而不是抛出异常
+//            throw new MyTopException(88888, "查询数据失败");
+//        }
+//
+//        // 获取评论区的用户的信息
+//        Map<Long, UserPo> usersMap = usersR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
+//        }).stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
 
-        // 获取评论区的用户的信息
-        Map<Long, UserPo> usersMap = usersR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
-        }).stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
+        List<UserPo> users = userApiService.getAvatarsAndNicknamesOfUsers(theUserIdsOfTheComments);
+        Map<Long, UserPo> usersMap = users.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
 
         if (user != null) {
             // 查询用户对评论的操作
@@ -93,7 +100,7 @@ public class CommentApiServiceImpl extends ServiceImpl<CommentDao, CommentPo> im
                 Map<Long, Integer> operationsMap = userOperations.stream()
                         .collect(Collectors.toMap(CommentOperationPo::getCommentId,
                                 CommentOperationPo::getOperation));
-                comments.stream().forEach(commentVo -> {
+                comments.forEach(commentVo -> {
                     UserPo commentUser = usersMap.get(commentVo.getUserId());
                     commentVo.setUsername(commentUser.getNickname());
                     commentVo.setUserAvatar(commentUser.getAvatar());
@@ -103,7 +110,7 @@ public class CommentApiServiceImpl extends ServiceImpl<CommentDao, CommentPo> im
             }
         }
         // 用户未登录或用户对评论无操作会走到这里
-        comments.stream().forEach(commentVo -> {
+        comments.forEach(commentVo -> {
             UserPo commentUser = usersMap.get(commentVo.getUserId());
             commentVo.setUsername(commentUser.getNickname());
             commentVo.setUserAvatar(commentUser.getAvatar());
@@ -130,7 +137,7 @@ public class CommentApiServiceImpl extends ServiceImpl<CommentDao, CommentPo> im
 
     @Override
     public void changeLikes(Long commentId, Integer ups, Integer downs) {
-        commentDao.changeLikes(commentId,ups,downs);
+        commentDao.changeLikes(commentId, ups, downs);
     }
 
 

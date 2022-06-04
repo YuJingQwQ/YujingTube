@@ -16,10 +16,13 @@ import icu.yujing.product.app.product.service.VideoApiService;
 import icu.yujing.product.constant.VideoConstant;
 import icu.yujing.product.feign.UserFeignService;
 import icu.yujing.user.entity.po.UserPo;
+import icu.yujing.user.service.UserApiService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
@@ -56,11 +59,11 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
     @Autowired
     private RedissonClient redissonClient;
 
-    @Autowired
-    private UserFeignService userFeignService;
+    @DubboReference()
+    private UserApiService userApiService;
 
-    @Autowired
-    private CommentApiService commentApiService;
+//    @Autowired
+//    private UserFeignService userFeignService;
 
     @Override
     public List<PageVideoVo> indexVideos() throws ExecutionException, InterruptedException {
@@ -81,21 +84,24 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         // 查询视频播放量
         CompletableFuture<Map<Long, Long>> videoViewsMapFuture = CompletableFuture.supplyAsync(() -> this.multiGetViewsOrLikes(videoIds, 0), executor);
 
-        // 查询作者信息
-        R<List<UserPo>> authorsR = userFeignService.getAvatarsAndNicknamesOfUsers(authorIds);
 
-        Map<Long, UserPo> authorsMap = null;
-        if (authorsR.getCode() == 200) {
-            List<UserPo> authors = authorsR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
-            });
-            authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
-        } else {
-            authorsMap = new HashMap<>();
-        }
-        Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
-        Map<Long, UserPo> finalAuthorsMap = authorsMap;
+//        R<List<UserPo>> authorsR = userFeignService.getAvatarsAndNicknamesOfUsers(authorIds);
+
+//        Map<Long, UserPo> authorsMap = null;
+//        if (authorsR.getCode() == 200) {
+//            List<UserPo> authors = authorsR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
+//            });
+//            authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
+//        } else {
+//            authorsMap = new HashMap<>();
+//        }
+
+        // 查询作者信息
+        List<UserPo> authors = userApiService.getAvatarsAndNicknamesOfUsers(authorIds);
+        final Map<Long, UserPo> authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
+        final Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
         return videos.stream().map(videoPo -> {
-            UserPo author = finalAuthorsMap.get(videoPo.getUserId());
+            UserPo author = authorsMap.get(videoPo.getUserId());
             String authorNickname = null;
             String authorAvatar = null;
             if (author == null) {
@@ -105,7 +111,8 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
                 authorNickname = author.getNickname();
                 authorAvatar = author.getAvatar();
             }
-            PageVideoVo videoVo = new PageVideoVo(videoPo.getId(),
+
+            return new PageVideoVo(videoPo.getId(),
                     videoPo.getCoverUrl()
                     , videoPo.getVideoUrl(),
                     videoPo.getTitle(),
@@ -118,8 +125,6 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
                     authorNickname,
                     authorAvatar
             );
-
-            return videoVo;
         }).collect(Collectors.toList());
     }
 
@@ -137,7 +142,7 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
             }
             redisTemplate.opsForValue().set(ProductModuleConstant.VideoConstant.VIDEO_DETAILS_REDIS_KEY + videoId,
                     JSON.toJSONString(videoPo));
-        }else{
+        } else {
             videoPo = JSON.parseObject(videoObj.toString(), new TypeReference<VideoPo>() {
             });
         }
@@ -145,26 +150,36 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         CompletableFuture<Long> VideoViewsFuture = CompletableFuture.supplyAsync(() ->
                 this.getVideoViewsOrLikes(videoId, 0), executor);
 
-        // 获取作者信息
-        R<UserPo> userR = userFeignService.getUserInfo(videoPo.getUserId());
         UserPo author = null;
-        if (userR.getCode() == 200) {
-            author = userR.getDataOfJsonObject(new TypeReference<UserPo>() {
-            });
-            if (author == null) {
-                author = new UserPo();
-                author.setNickname("用户已注销");
-                author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
-                author.setFansCount(0);
-            }
-
-        } else {
-            // 查询作者失败时,返回一个默认对象
+        try {
+            author = userApiService.getUserFromDatabase(videoPo.getUserId());
+        } catch (Exception e) {
             author = new UserPo();
             author.setNickname("查询失败");
             author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
             author.setFansCount(0);
         }
+
+        // 获取作者信息
+//        R<UserPo> userR = userFeignService.getUserInfo(videoPo.getUserId());
+//        UserPo author = null;
+//        if (userR.getCode() == 200) {
+//            author = userR.getDataOfJsonObject(new TypeReference<UserPo>() {
+//            });
+//            if (author == null) {
+//                author = new UserPo();
+//                author.setNickname("用户已注销");
+//                author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
+//                author.setFansCount(0);
+//            }
+//
+//        } else {
+//            // 查询作者失败时,返回一个默认对象
+//            author = new UserPo();
+//            author.setNickname("查询失败");
+//            author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
+//            author.setFansCount(0);
+//        }
 
         PageVideoVo videoVo = new PageVideoVo();
         videoVo.setVideoId(videoPo.getId());
@@ -276,20 +291,24 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         CompletableFuture<Map<Long, Long>> videoViewsMapFuture = CompletableFuture.supplyAsync(() -> this.multiGetViewsOrLikes(videoIds, 0), executor);
 
         // 查询作者信息
-        R<List<UserPo>> authorsR = userFeignService.getAvatarsAndNicknamesOfUsers(authorIds);
-
-        Map<Long, UserPo> authorsMap = null;
-        if (authorsR.getCode() == 200) {
-            List<UserPo> authors = authorsR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
-            });
-            authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
-        } else {
-            authorsMap = new HashMap<>();
-        }
-        Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
-        Map<Long, UserPo> finalAuthorsMap = authorsMap;
+//        R<List<UserPo>> authorsR = userFeignService.getAvatarsAndNicknamesOfUsers(authorIds);
+//
+//        Map<Long, UserPo> authorsMap = null;
+//        if (authorsR.getCode() == 200) {
+//            List<UserPo> authors = authorsR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
+//            });
+//            authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
+//        } else {
+//            authorsMap = new HashMap<>();
+//        }
+//        Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
+//        Map<Long, UserPo> finalAuthorsMap = authorsMap;
+        // 查询作者信息
+        List<UserPo> authors = userApiService.getAvatarsAndNicknamesOfUsers(authorIds);
+        final Map<Long, UserPo> authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
+        final Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
         return videos.stream().map(videoPo -> {
-            UserPo author = finalAuthorsMap.get(videoPo.getUserId());
+            UserPo author = authorsMap.get(videoPo.getUserId());
             String authorNickname = null;
             String authorAvatar = null;
             if (author == null) {
@@ -299,7 +318,8 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
                 authorNickname = author.getNickname();
                 authorAvatar = author.getAvatar();
             }
-            PageVideoVo videoVo = new PageVideoVo(videoPo.getId(),
+
+            return new PageVideoVo(videoPo.getId(),
                     videoPo.getCoverUrl()
                     , videoPo.getVideoUrl(),
                     videoPo.getTitle(),
@@ -312,8 +332,6 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
                     authorNickname,
                     authorAvatar
             );
-
-            return videoVo;
         }).collect(Collectors.toList());
     }
 
@@ -351,7 +369,7 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
 
     @Override
     public long[] listIdByIndexAndSize(long index, long size) {
-        return videoDao.listIdByIndexAndSize(index,size);
+        return videoDao.listIdByIndexAndSize(index, size);
     }
 
     @Override

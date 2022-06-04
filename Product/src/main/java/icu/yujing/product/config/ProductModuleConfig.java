@@ -1,6 +1,7 @@
 package icu.yujing.product.config;
 
 import io.seata.spring.annotation.datasource.EnableAutoDataSourceProxy;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
@@ -20,9 +21,10 @@ import java.util.concurrent.TimeUnit;
  * @version: 1.0
  * @description:
  */
+@EnableDubbo(scanBasePackages = "icu.yujing.product")
 @EnableScheduling
-@EnableDiscoveryClient
-@EnableFeignClients(basePackages = "icu.yujing.product.feign")
+//@EnableDiscoveryClient
+//@EnableFeignClients(basePackages = "icu.yujing.product.feign")
 @EnableAutoDataSourceProxy
 @Configuration
 public class ProductModuleConfig {

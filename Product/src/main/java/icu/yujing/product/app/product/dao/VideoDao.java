@@ -3,6 +3,7 @@ package icu.yujing.product.app.product.dao;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import icu.yujing.product.app.product.entity.po.VideoPo;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -12,6 +13,7 @@ import java.util.List;
  * @version: 1.0
  * @description:
  */
+@Repository
 public interface VideoDao extends BaseMapper<VideoPo> {
 
     void videoPlayIncrease(@Param("videoId") Long videoId);

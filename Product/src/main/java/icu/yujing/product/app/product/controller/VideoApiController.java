@@ -7,6 +7,7 @@ import icu.yujing.common.utils.R;
 import icu.yujing.product.app.product.entity.vo.PageVideoVo;
 import icu.yujing.product.app.product.service.VideoApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
