@@ -8,6 +8,7 @@ import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.common.utils.JwtUtils;
 import icu.yujing.common.utils.R;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,15 +43,28 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
         if (StringUtils.isEmpty(jwt)) {
             // 放行
             currentThreadUser.set(new UserDetailsEntity());
-            filterChain.doFilter(request, response);
-            currentThreadUser.remove();
+            try {
+                filterChain.doFilter(request, response);
+            }finally {
+                currentThreadUser.remove();
+            }
             return;
         }
         Claims claims;
         try {
             claims = JwtUtils.parseJwt(UserModuleConstant.JWT_USER_SIGNATURE, jwt);
+        }catch(ExpiredJwtException e){
+            // token过期 放行
+            currentThreadUser.set(new UserDetailsEntity());
+            try {
+                filterChain.doFilter(request, response);
+            }finally {
+                currentThreadUser.remove();
+            }
+            return;
         } catch (Exception e) {
             response.setHeader("Content-Type", "application/json");
+            response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
             writer.write(JSON.toJSONString(R.error(ExceptionContent.DIY_EXCEPTION.getCode(), "非法Token")));
             writer.close();

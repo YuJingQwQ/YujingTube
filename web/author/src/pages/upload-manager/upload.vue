@@ -273,20 +273,18 @@ export default {
     },
     // 上传视频
     VideoUploader({ file }) {
-      // 具体格式支持未测验,已测验的格式为 MP4 和 mkv
+      // 前端验证视频格式,后端会再次校验~
       let checkFileSuffix = this.$yujingUtils.checkFileSuffix(file.name, [
         "flv",
         "mp4",
-        // "mov",
         "mkv",
       ]);
 
       if (!checkFileSuffix) {
-        // this.$message.error("文件格式只支持[mp4,mkv,mov,flv]");
         this.$message.error("文件格式只支持[mp4,mkv,flv]");
         return;
       }
-
+      // 前端校验文件大小
       let checkFileSize = this.$yujingUtils.checkFileSize(file.size, 100, "MB");
       if (!checkFileSize) {
         this.$message.error("文件大小不能超过100MB");

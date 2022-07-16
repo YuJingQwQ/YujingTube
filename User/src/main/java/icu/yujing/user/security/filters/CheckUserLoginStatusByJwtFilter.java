@@ -8,6 +8,7 @@ import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.common.utils.JwtUtils;
 import icu.yujing.common.utils.R;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,22 +42,29 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
         // 判断请求头是否携带jwt
         if (StringUtils.isEmpty(jwt)) {
             // 放行
+            currentThreadUser.set(new UserDetailsEntity());
             try {
-                currentThreadUser.set(new UserDetailsEntity());
                 filterChain.doFilter(request, response);
-                return;
-            } catch (Exception e) {
-                throw e;
-            } finally {
+            }finally {
                 currentThreadUser.remove();
             }
+            return;
         }
         Claims claims;
         try {
             claims = JwtUtils.parseJwt(UserModuleConstant.JWT_USER_SIGNATURE, jwt);
+        }catch(ExpiredJwtException e){
+            // token过期 放行
+            currentThreadUser.set(new UserDetailsEntity());
+            try {
+                filterChain.doFilter(request, response);
+            }finally {
+                currentThreadUser.remove();
+            }
+            return;
         } catch (Exception e) {
-            response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "application/json");
+            response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
             writer.write(JSON.toJSONString(R.error(ExceptionContent.DIY_EXCEPTION.getCode(), "非法Token")));
             writer.close();
@@ -74,22 +82,16 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
             writer.close();
             return;
         }
-        try {
-            UserDetailsEntity userDetailsEntity = JSON.parseObject(userDetailsJson, new TypeReference<UserDetailsEntity>() {
-            });
-            currentThreadUser.set(userDetailsEntity);
-            //存入SecurityContextHolder
-            //TODO 获取权限信息封装到Authentication中
-            UsernamePasswordAuthenticationToken authenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetailsEntity.getUser(), null, userDetailsEntity.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            //放行
-            filterChain.doFilter(request, response);
-        } catch (Exception e) {
-            throw e;
-        } finally {
-            // 清空当前线程的数据
-            currentThreadUser.remove();
-        }
+        // 将当前用户信息存入每个线程独有的ThreadLocal
+        UserDetailsEntity userDetailsEntity = JSON.parseObject(userDetailsJson, new TypeReference<UserDetailsEntity>() {
+        });
+        currentThreadUser.set(userDetailsEntity);
+        //存入SecurityContextHolder
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(userDetailsEntity.getUser(), null, userDetailsEntity.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        //放行
+        filterChain.doFilter(request, response);
+        currentThreadUser.remove();
     }
 }

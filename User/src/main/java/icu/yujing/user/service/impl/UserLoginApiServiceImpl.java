@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import icu.yujing.common.constant.ExceptionContent;
 import icu.yujing.common.constant.UserModuleConstant;
+import icu.yujing.common.exception.AccountIsExistedException;
 import icu.yujing.common.exception.MyTopException;
 import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.common.utils.JwtUtils;
@@ -115,20 +116,19 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
         String verificationCode = ((int) (Math.random() * 100000)) + "";
         List<String> keys = Arrays.asList(UserModuleConstant.USER_VERIFICATION_CODE_PREFIX + phone);
         Long result = redisTemplate.execute(script, keys, verificationCode, "60");
-        System.out.println("result: " + result);
-
 
         if (result == 1L) {
-            //TODO 调用远程服务
-            VerificationCodeTo verificationCodeTo = new VerificationCodeTo();
-            verificationCodeTo.setPhone(phone);
-            verificationCodeTo.setVerificationCode(verificationCode);
-            R resultR = thirdPartyFeignService.sendTheVerificationCode(verificationCodeTo);
-            if (resultR.getCode() == 200) {
-                return R.ok();
-            } else {
-                return R.error(88888, "发送验证码失败");
-            }
+            // 调用第三方短信服务
+//            VerificationCodeTo verificationCodeTo = new VerificationCodeTo();
+//            verificationCodeTo.setPhone(phone);
+//            verificationCodeTo.setVerificationCode(verificationCode);
+//            R resultR = thirdPartyFeignService.sendTheVerificationCode(verificationCodeTo);
+//            if (resultR.getCode() == 200) {
+//                return R.ok();
+//            } else {
+//                return R.error(88888, "发送验证码失败");
+//            }
+            return R.ok();
         } else if (result == 0) {
             return R.error(ExceptionContent.REDIS_KEY_CANT_BE_EXPIRED.getCode(), ExceptionContent.REDIS_KEY_CANT_BE_EXPIRED.getMessage());
         } else {
@@ -159,22 +159,24 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
 
     @Override
     public UserPo userRegister(UserLoginVo userLoginVo) {
+        // 校验两次密码是否一致
         if (!userLoginVo.getPassword().equals(userLoginVo.getRepassword())) {
             throw new MyTopException(ExceptionContent.DIFFERENT_PASSWORD.getCode(),
                     ExceptionContent.DIFFERENT_PASSWORD.getMessage());
         }
 
-
-        DefaultRedisScript<Long> script = new DefaultRedisScript<>("if redis.call('GET',KEYS[1]) == ARGV[1] then return redis.call('DEL',KEYS[1]) else return 2 end", Long.class);
+        DefaultRedisScript<Long> script = new DefaultRedisScript<>(
+                "if redis.call('GET',KEYS[1]) == ARGV[1] then return redis.call('DEL',KEYS[1]) else return 2 end",
+                Long.class);
         Long result = redisTemplate.execute(script,
                 Arrays.asList(UserModuleConstant.USER_VERIFICATION_CODE_PREFIX + userLoginVo.getPhone()),
                 userLoginVo.getVerificationCode());
-        // result-> 0:验证码相同,但删除KEY的时候失败了 1:验证通过 2:验证码不相同
+        // result-> 0:验证码相同,但删除KEY的时候失败了 1:验证通过 2:验证码不通过
         if (result == 1L) {
-            // 如果以前注册过,直接通过
+            // 如果以前注册过,抛出异常
             UserPo user = userApiService.getOne(new QueryWrapper<UserPo>().eq("phone", userLoginVo.getPhone()));
             if (user != null) {
-                return user;
+                throw new AccountIsExistedException();
             }
             // 注册账号并登录
             UserPo userPo = new UserPo();
@@ -194,11 +196,4 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
                     ExceptionContent.REDIS_KEY_CANT_BE_DELETED.getMessage());
         }
     }
-
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        UserPo user = getOne(new QueryWrapper<UserPo>().eq("phone", username));
-//        UserDetailsEntity userDetails = new UserDetailsEntity(user);
-//        return userDetails;
-//    }
 }

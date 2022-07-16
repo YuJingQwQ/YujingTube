@@ -448,7 +448,6 @@ export default {
         .then(({ data }) => {
           if (data.code == 200) {
             location.href = `${this.$globalConfig.product}login`;
-          } else if (data.code == 89999) {
           } else {
             this.$message.error(data.msg);
           }

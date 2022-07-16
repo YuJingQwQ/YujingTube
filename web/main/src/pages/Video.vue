@@ -48,7 +48,7 @@
           class="video-description-button"
           type="primary"
           @click="changeVideoDescriptionClass()"
-          v-text="videoDescriptionButtonText == 0 ? '展开' : '收缩'"
+          v-text="videoDescriptionClass.videoDescriptionPart ? '展开' : '收缩'"
         ></el-link>
       </div>
 
@@ -163,7 +163,6 @@ export default {
         videoDescriptionFull: true,
         videoDescriptionPart: false,
       },
-      videoDescriptionButtonText: 0,
     };
   },
   methods: {
@@ -203,12 +202,6 @@ export default {
         !this.videoDescriptionClass.videoDescriptionFull;
       this.videoDescriptionClass.videoDescriptionPart =
         !this.videoDescriptionClass.videoDescriptionPart;
-
-      if (this.videoDescriptionClass.videoDescriptionPart) {
-        this.videoDescriptionButtonText = 0;
-      } else {
-        this.videoDescriptionButtonText = 1;
-      }
     },
     getVideoIdFromAddress() {
       let href = location.href;
@@ -242,6 +235,12 @@ export default {
       );
     },
     postComment() {
+      // 检查登录状态
+      if (!this.$store.state.isLogined) {
+        this.$message.warning("请先登录");
+        return;
+      }
+      
       if (this.myComment.length == 0) {
         this.$message.warning("填点东西吧~");
         return;
@@ -297,7 +296,9 @@ export default {
           `api/comment/operation/${operation}/${this.video.videoId}/${commentId}`
         )
         .then(({ data }) => {
-          if (data.code = 110001) {
+          if (data.code == 200) {
+            this.$message.success(data.msg);
+          } else {
             this.$message.error(data.msg);
           }
         })
@@ -392,6 +393,7 @@ export default {
       });
   },
   mounted() {
+    let that = this
     setTimeout(() => {
       // 获取到视频简介的高度 如果高度 <= 40 则不用显示展开按钮
       let videoDescription = document.getElementById("video-description-scope");
@@ -402,10 +404,10 @@ export default {
           "video-description-button"
         )[0];
         btn.style.display = "unset";
-        this.videoDescriptionButtonText = 1;
+        that.videoDescriptionClass.videoDescriptionPart = true;
         videoDescription.setAttribute("class", "videoDescriptionPart");
       }
-    }, 200);
+    }, 500);
   },
 };
 </script>

@@ -68,10 +68,6 @@ public class UserLoginApiController {
     @PostMapping("/register")
     public R userRegister(@RequestBody @Validated(RegisterValidationGroup.class) UserLoginVo userLoginVo) {
         userLoginApiService.userRegister(userLoginVo);
-//        UserPo user = userLoginApiService.userRegister(userLoginVo);
-//        user.setPassword(null);
-//        session.setMaxInactiveInterval(60 * 60 * 24 * 30);
-//        session.setAttribute(UserModuleConstant.USER, user);
         return R.ok();
     }
 
