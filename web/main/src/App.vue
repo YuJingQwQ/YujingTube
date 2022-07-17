@@ -303,6 +303,9 @@ export default {
 </script>
 
 <style>
+* {
+  box-sizing: border-box;
+}
 /* 设置滚动条的样式 */
 ::-webkit-scrollbar {
   width: 8px;

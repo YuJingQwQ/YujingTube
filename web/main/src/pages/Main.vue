@@ -42,9 +42,9 @@
       </div>
     </div>
     <!--  视频内容  -->
-    <div @resize="contentResize()" id="content">
+    <div id="content">
       <div class="content-column" v-for="(video, index) in videos" :key="index">
-        <router-link class="link-style" :to="`/video/${video.videoId}`">
+        <router-link class="link-style media-img-link" :to="`/video/${video.videoId}`">
           <img class="media-img" :src="video.videoCoverUrl"
         /></router-link>
 
@@ -55,7 +55,7 @@
             ><img class="media-user-avatar" :src="video.authorAvatar"
           /></router-link>
           <div class="media-info">
-            <div style="height: 44px">
+            <div class="media-title-scope">
               <router-link class="link-style" :to="`/video/${video.videoId}`">
                 <span class="media-title" v-text="video.videoTitle">标题</span>
               </router-link>
@@ -92,9 +92,6 @@ export default {
     };
   },
   watch: {
-    "$store.state.sidebarVisible"() {
-      this.contentResize();
-    },
     currentZoneId() {
       this.initVideos();
     },
@@ -129,26 +126,22 @@ export default {
         path: `/video/${videoId}`,
       });
     },
-    contentResize() {
-      let contentScopeDom = document.getElementById("main-scope");
-      let contentDom = document.getElementById("content");
-      let cw = contentScopeDom.clientWidth;
-      this.columnCount = Math.floor(cw / 356);
-      let contentWidth = 356 * this.columnCount;
-      let padding = Math.abs(cw - contentWidth) / 2;
-      contentDom.style.width = contentWidth + "px";
-      contentDom.style.paddingLeft = padding + "px";
-      contentDom.style.paddingRight = padding + "px";
-    },
-    // 计算当前宽度一行能存放多少个视频介绍框
-    contentcolumnCount() {
-      let contentScopeDom = document.getElementById("main-scope");
-      let cw = contentScopeDom.clientWidth;
-      this.columnCount = Math.floor(cw / 356);
-    },
-    // 计算当前高度能存放多少行视频介绍框
-    contentRowCount() {
-      this.rowCount = Math.floor(screen.availHeight / 319);
+    countContentRowAndColumnSize() {
+      // 行
+      let contentItemHeight = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--content-item-height");
+      console.log("--content-item-height:",contentItemHeight)
+      this.rowCount = Math.floor(window.screen.height / contentItemHeight.slice(0,contentItemHeight.length - 2));
+      // 列
+      let contentItemWidth = getComputedStyle(
+        document.documentElement
+      ).getPropertyValue("--content-item-width");
+      this.columnCount = Math.floor(
+        document.querySelector("#content").clientWidth /
+          contentItemWidth.slice(0, contentItemWidth.length - 2)
+      );
+      console.log("--content-item-width:",contentItemWidth)
     },
     scrollToBottomThenSpawnVideos() {
       window.onscroll = () => {
@@ -165,7 +158,6 @@ export default {
             document.documentElement.scrollTop -
             document.documentElement.clientHeight <=
           200;
-
         if (bottomOfWindow && this.isLoading == false) {
           this.isLoading = true;
           this.initVideos();
@@ -184,12 +176,7 @@ export default {
     },
   },
   mounted() {
-    this.windowResizeFunc = () => {
-      this.contentResize();
-    };
-    window.addEventListener("resize", this.windowResizeFunc);
-    this.contentcolumnCount();
-    this.contentRowCount();
+    this.countContentRowAndColumnSize();
     this.initVideos();
     this.scrollToBottomThenSpawnVideos();
     this.bindZoneClickEvent();
@@ -197,7 +184,6 @@ export default {
   beforeDestroy() {
     console.log("MainBeforeDestroy");
     window.onscroll = undefined;
-    window.removeEventListener("resize", this.windowResizeFunc);
   },
 };
 </script>
@@ -223,12 +209,10 @@ export default {
   border-left: hidden;
   border-right: hidden;
 }
-
 #checked-zone-scope {
   background-color: #ffffff;
   color: #181818;
 }
-
 #zone-scope-scope {
   display: flex;
   margin-left: auto;
@@ -236,7 +220,6 @@ export default {
   width: 450px;
   height: 32px;
 }
-
 .zone-scope {
   display: flex;
   flex-direction: column;
@@ -249,56 +232,69 @@ export default {
   background-color: #4d4d4d;
   cursor: pointer;
 }
-
 #partition > div > div > span {
   line-height: 32px;
 }
-
 /*---  分区  end*/
-
 /*---  内容  ---*/
 #content {
   display: flex;
   flex-wrap: wrap;
   padding-top: 20px;
-  /* justify-content: center; */
-
-  padding-left: calc((100vw - (5 * 356px) - 100px) / 2);
-  padding-right: calc((100vw - (5 * 356px) - 100px) / 2);
+  justify-content: center;
+}
+@media (min-width: 768px) {
+  :root {
+    --content-item-width: 350px;
+    --content-item-height: 294px;
+  }
+}
+@media (min-width: 480px) and (max-width: 767px) {
+  :root {
+    --content-item-width: 280px;
+    --content-item-height: 250px;
+  }
+}
+@media only screen and (max-width: 479px) {
+  :root {
+    --content-item-width: 94%;
+    --content-item-height: 250px;
+  }
 }
 .content-column {
-  width: 340px;
-  padding-left: 8px;
-  padding-right: 8px;
-  margin-bottom: 15px;
+  width: var(--content-item-width);
+  height: var(--content-item-height);
+  margin: 7px 7px 7px 7px;
 }
-
+.media-img-link{
+  height: 60%;
+  display: block;
+}
 .media-img {
-  margin-left: auto;
-  margin-right: auto;
-  width: 340px;
-  height: 190px;
+  width: 100%;
+  height: 100%;
 }
-
 .media-user-avatar {
   width: 36px;
   height: 36px;
   border-radius: 36px;
 }
-
 .media-details {
   display: flex;
-  width: 340px;
-  height: 100px;
+  width: 100%;
+  height: 40%;
   background-color: #181818;
   padding-top: 10px;
 }
-
 .media-info {
   margin-left: 10px;
   margin-right: 30px;
+  height: 100%;
+  padding-bottom: 4px;
 }
-
+.media-title-scope{
+  height: 50%;
+}
 .media-title {
   color: #fff;
   display: -webkit-box;
@@ -312,7 +308,9 @@ export default {
   white-space: normal;
   -webkit-box-orient: vertical;
 }
-
+.media-author-scope{
+  height: 25%;
+}
 .media-author {
   padding-top: 5px;
   display: inline-block;
@@ -324,7 +322,6 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .media-views-and-uploading-time {
   display: block;
   color: #aaaaaa;
@@ -332,7 +329,7 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  height: 25%;
 }
-
 /*---  内容  end*/
 </style>
