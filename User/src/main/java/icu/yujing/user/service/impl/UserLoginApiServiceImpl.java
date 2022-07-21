@@ -23,6 +23,7 @@ import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -80,7 +81,6 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
                     ExceptionContent.ACCOUNT_IS_NOT_EXISTED.getMessage());
         }
         // 密码登录
-
         boolean result = UserModuleConfig.USER_PASSWORD_ENCODER.matches(userLoginVo.getPassword(), user.getPassword());
         if (result) {
             return createJwtAndSaveUserIntoRedis(user);

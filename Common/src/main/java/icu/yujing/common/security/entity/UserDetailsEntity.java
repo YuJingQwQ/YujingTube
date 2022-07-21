@@ -30,15 +30,6 @@ public class UserDetailsEntity implements UserDetails, Serializable {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        if (authorities == null) {
-//            if (authorityList != null && authorityList.size() > 0) {
-//                authorities = authorityList.stream()
-//                        .map(SimpleGrantedAuthority::new)
-//                        .collect(Collectors.toList());
-//            } else {
-//                authorities = new ArrayList<>(0);
-//            }
-//        }
         return authorities;
     }
 

@@ -1,6 +1,8 @@
 package icu.yujing.user.security.config;
 
 import icu.yujing.common.constant.DomainConstant;
+import icu.yujing.user.security.exception.AccessDeniedHandlerImpl;
+import icu.yujing.user.security.exception.AuthenticationEntryPointImpl;
 import icu.yujing.user.security.filters.CheckUserLoginStatusByJwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +28,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CheckUserLoginStatusByJwtFilter checkUserLoginStatusByJwtFilter;
+
+    @Autowired
+    private AccessDeniedHandlerImpl accessDeniedHandler;
+
+    @Autowired
+    private AuthenticationEntryPointImpl authenticationEntryPoint;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -63,6 +71,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         //把token校验过滤器添加到过滤器链中
         http.addFilterBefore(checkUserLoginStatusByJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
+        http.exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler);
     }
 
 }

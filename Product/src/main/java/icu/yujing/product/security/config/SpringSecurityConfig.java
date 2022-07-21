@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import icu.yujing.common.constant.DomainConstant;
 import icu.yujing.common.constant.ExceptionContent;
 import icu.yujing.common.utils.R;
+import icu.yujing.product.security.exception.AccessDeniedHandlerImpl;
+import icu.yujing.product.security.exception.AuthenticationEntryPointImpl;
 import icu.yujing.product.security.filters.CheckUserLoginStatusByJwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +31,12 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private CheckUserLoginStatusByJwtFilter checkUserLoginStatusByJwtFilter;
 
+    @Autowired
+    private AccessDeniedHandlerImpl accessDeniedHandler;
+
+    @Autowired
+    private AuthenticationEntryPointImpl authenticationEntryPoint;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -52,13 +60,8 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         //把token校验过滤器添加到过滤器链中
         http.addFilterBefore(checkUserLoginStatusByJwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        http.exceptionHandling().authenticationEntryPoint((request, response, e) -> {
-            response.setContentType("application/json;charset=utf-8");
-            PrintWriter out = response.getWriter();
-            R r = R.error(ExceptionContent.NO_ENOUGH_AUTHORITY.getCode(), ExceptionContent.NO_ENOUGH_AUTHORITY.getMessage());
-            out.write(JSON.toJSONString(r));
-            out.flush();
-            out.close();
-        });
+        http.exceptionHandling()
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler);
     }
 }

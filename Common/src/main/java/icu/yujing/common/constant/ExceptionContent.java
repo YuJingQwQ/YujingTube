@@ -16,7 +16,7 @@ public enum ExceptionContent {
     EMPTY_FILE(00001, "文件为空"),
     WRONG_FILE_SIZE(00002, "文件大小非法"),
     WRONG_FILE_TYPE(00003, "文件类型非法"),
-    NO_ENOUGH_AUTHORITY(00004,"访问失败"),
+    NO_ENOUGH_AUTHORITY(00004,"权限不足"),
     ACCOUNT_IS_NOT_EXISTED(20000, "用户不存在"),
     NO_SUCH_VIDEO(10000,"查询不到此视频信息"),
     ACCOUNT_IS_EXISTED(20001, "用户已存在"),
