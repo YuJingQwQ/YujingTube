@@ -3,6 +3,7 @@ package icu.yujing.user.entity.po;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -30,6 +31,7 @@ public class UserPo implements Serializable {
     private Integer videos;
     private Integer likes;
     private Long views;
+    @JsonIgnore
     @TableLogic
     private Integer isDeleted;
 

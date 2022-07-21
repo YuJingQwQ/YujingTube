@@ -19,6 +19,7 @@ import java.io.IOException;
 @Service
 @FeignClient("yujingtube-product")
 public interface ThirdPartyFeignService {
+
     @PostMapping("/api/thirdparty/send/verification/code")
     R sendTheVerificationCode(@RequestBody VerificationCodeTo verificationCodeTo);
 

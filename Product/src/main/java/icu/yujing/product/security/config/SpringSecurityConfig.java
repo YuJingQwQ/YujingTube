@@ -1,9 +1,6 @@
 package icu.yujing.product.security.config;
 
-import com.alibaba.fastjson.JSON;
 import icu.yujing.common.constant.DomainConstant;
-import icu.yujing.common.constant.ExceptionContent;
-import icu.yujing.common.utils.R;
 import icu.yujing.product.security.exception.AccessDeniedHandlerImpl;
 import icu.yujing.product.security.exception.AuthenticationEntryPointImpl;
 import icu.yujing.product.security.filters.CheckUserLoginStatusByJwtFilter;
@@ -15,8 +12,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.io.PrintWriter;
 
 /**
  * @author: Cyqurt

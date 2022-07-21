@@ -12,7 +12,6 @@
         <module>Common</module>
         <module>Gateway</module>
         <module>Product</module>
-        <module>ThirdParty</module>
         <module>User</module>
         <module>Admin</module>
     </modules>

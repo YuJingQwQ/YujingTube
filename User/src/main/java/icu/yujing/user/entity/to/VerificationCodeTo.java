@@ -10,6 +10,12 @@ import lombok.Data;
  */
 @Data
 public class VerificationCodeTo {
+    /**
+     * 电话号码
+     */
     private String phone;
+    /**
+     * 验证码
+     */
     private String verificationCode;
 }

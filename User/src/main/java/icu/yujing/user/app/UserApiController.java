@@ -1,18 +1,11 @@
 package icu.yujing.user.app;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.common.utils.R;
 import icu.yujing.user.entity.po.UserPo;
-import icu.yujing.user.security.filters.CheckUserLoginStatusByJwtFilter;
 import icu.yujing.user.service.UserApiService;
-import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**

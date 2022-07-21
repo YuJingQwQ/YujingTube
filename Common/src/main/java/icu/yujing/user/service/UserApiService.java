@@ -1,7 +1,6 @@
 package icu.yujing.user.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.user.entity.po.UserPo;
 
 import java.util.List;

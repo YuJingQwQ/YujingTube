@@ -1,10 +1,8 @@
 package icu.yujing.product.app.product.service.impl;
 
-import com.alibaba.fastjson.TypeReference;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import icu.yujing.common.exception.MyTopException;
 import icu.yujing.common.utils.R;
 import icu.yujing.product.app.product.dao.CommentDao;
 import icu.yujing.product.app.product.service.CommentApiService;
@@ -13,12 +11,10 @@ import icu.yujing.product.app.product.entity.po.CommentOperationPo;
 import icu.yujing.product.app.product.entity.po.CommentPo;
 import icu.yujing.product.app.product.entity.vo.CommentVo;
 import icu.yujing.product.app.product.entity.vo.UserCommentVo;
-import icu.yujing.product.feign.UserFeignService;
 import icu.yujing.user.entity.po.UserPo;
 import icu.yujing.user.service.UserApiService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;

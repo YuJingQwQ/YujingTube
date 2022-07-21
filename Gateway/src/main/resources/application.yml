@@ -7,11 +7,6 @@ spring:
           predicates:
             - Host=yujing.icu
 
-        - id: yujingmail_thirdparty_route
-          uri: lb://yujingtube-thirdparty
-          predicates:
-            - Host=thirdparty.yujing.icu
-
         - id: yujingmail_user_route
           uri: lb://yujingtube-user
           predicates:
@@ -21,7 +16,6 @@ spring:
           uri: lb://yujingtube-admin
           predicates:
             - Host=admin.yujing.icu
-
 
     nacos:
       server-addr: 192.168.89.128:8848

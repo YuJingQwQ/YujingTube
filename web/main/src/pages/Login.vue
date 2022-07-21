@@ -555,7 +555,7 @@ export default {
   display: flex;
   justify-content: center;
   font-size: 18px;
-  max-height: 20px;
+  max-height: 40px;
   padding-top: 15px;
   color: #ffffff;
 }

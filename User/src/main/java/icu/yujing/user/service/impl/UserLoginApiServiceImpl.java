@@ -19,11 +19,9 @@ import icu.yujing.user.entity.vo.UserLoginVo;
 import icu.yujing.user.feign.ThirdPartyFeignService;
 import icu.yujing.user.service.UserApiService;
 import icu.yujing.user.service.UserLoginApiService;
-import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -121,16 +119,15 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
 
         if (result == 1L) {
             // 调用第三方短信服务
-//            VerificationCodeTo verificationCodeTo = new VerificationCodeTo();
-//            verificationCodeTo.setPhone(phone);
-//            verificationCodeTo.setVerificationCode(verificationCode);
-//            R resultR = thirdPartyFeignService.sendTheVerificationCode(verificationCodeTo);
-//            if (resultR.getCode() == 200) {
-//                return R.ok();
-//            } else {
-//                return R.error(88888, "发送验证码失败");
-//            }
-            return R.ok();
+            VerificationCodeTo verificationCodeTo = new VerificationCodeTo();
+            verificationCodeTo.setPhone(phone);
+            verificationCodeTo.setVerificationCode(verificationCode);
+            R resultR = thirdPartyFeignService.sendTheVerificationCode(verificationCodeTo);
+            if (resultR.getCode() == 200) {
+                return R.ok();
+            } else {
+                return R.error(88888, "发送验证码失败");
+            }
         } else if (result == 0) {
             return R.error(ExceptionContent.REDIS_KEY_CANT_BE_EXPIRED.getCode(), ExceptionContent.REDIS_KEY_CANT_BE_EXPIRED.getMessage());
         } else {

@@ -9,7 +9,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  * @version: 1.0
  * @date: 2022/1/4 14:35
  */
-@EnableDiscoveryClient
 @SpringBootApplication
 public class Gateway5000Application {
     public static void main(String[] args) {

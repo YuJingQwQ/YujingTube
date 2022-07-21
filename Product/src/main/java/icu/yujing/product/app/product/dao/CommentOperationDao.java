@@ -2,7 +2,6 @@ package icu.yujing.product.app.product.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import icu.yujing.product.app.product.entity.po.CommentOperationPo;
-import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 

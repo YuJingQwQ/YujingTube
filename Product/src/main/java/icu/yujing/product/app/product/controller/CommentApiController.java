@@ -5,10 +5,8 @@ import icu.yujing.product.app.product.entity.po.CommentOperationPo;
 import icu.yujing.product.app.product.entity.vo.UserCommentVo;
 import icu.yujing.product.app.product.service.CommentApiService;
 import icu.yujing.product.app.product.service.CommentOperationApiService;
-import icu.yujing.product.security.filters.CheckUserLoginStatusByJwtFilter;
 import icu.yujing.user.entity.po.UserPo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 

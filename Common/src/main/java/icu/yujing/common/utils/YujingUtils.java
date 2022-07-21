@@ -7,6 +7,8 @@ import icu.yujing.common.constant.UserModuleConstant;
 import icu.yujing.common.exception.MyTopException;
 
 import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -133,9 +135,9 @@ public class YujingUtils {
         }
 
         if (prefix.endsWith("/")) {
-            pathBuilder.append(UserModuleConstant.OSS_TIME_FOMATTER.format(new Date()));
+            pathBuilder.append(LocalDate.now().format(UserModuleConstant.OSS_TIME_FORMATTER));
         } else {
-            pathBuilder.append("/").append(UserModuleConstant.OSS_TIME_FOMATTER.format(new Date()));
+            pathBuilder.append("/").append(LocalDate.now().format(UserModuleConstant.OSS_TIME_FORMATTER));
         }
 
         pathBuilder.append("/").append(randomFilename);

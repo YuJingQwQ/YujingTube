@@ -5,7 +5,6 @@ import icu.yujing.common.utils.R;
 import icu.yujing.product.app.product.entity.to.ElasticSearchVideoTo;
 import icu.yujing.product.app.product.service.VideoSearchApiService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

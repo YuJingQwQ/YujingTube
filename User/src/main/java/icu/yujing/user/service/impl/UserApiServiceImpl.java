@@ -2,10 +2,8 @@ package icu.yujing.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import icu.yujing.common.security.entity.UserDetailsEntity;
 import icu.yujing.user.dao.UserDao;
 import icu.yujing.user.entity.po.UserPo;
-import icu.yujing.user.security.filters.CheckUserLoginStatusByJwtFilter;
 import icu.yujing.user.service.UserApiService;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,7 +42,6 @@ public class UserApiServiceImpl extends ServiceImpl<UserDao, UserPo> implements 
     public UserPo getUserFromDatabase(Long userId) {
         UserPo user = getById(userId);
         user.setPassword(null);
-        user.setPhone(null);
         return user;
     }
 }

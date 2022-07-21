@@ -7,9 +7,6 @@ import icu.yujing.common.constant.ElasticsearchConstant;
 import icu.yujing.product.app.product.entity.to.ElasticSearchVideoTo;
 import icu.yujing.product.app.product.service.VideoApiService;
 import icu.yujing.product.app.product.service.VideoSearchApiService;
-import icu.yujing.product.feign.UserFeignService;
-import icu.yujing.user.service.UserApiService;
-import org.apache.dubbo.config.annotation.DubboReference;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -20,7 +17,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -28,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * @author: Cyqurt
