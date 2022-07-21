@@ -13,7 +13,7 @@ import java.util.List;
  * @description:
  */
 public interface UserApiService extends IService<UserPo> {
-    UserDetailsEntity getUserFromJwt();
+    UserPo getUserFromJwt();
 
     List<UserPo> getAvatarsAndNicknamesOfUsers(long[] userIds);
 

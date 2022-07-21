@@ -12,7 +12,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,10 +32,9 @@ import java.io.PrintWriter;
  * @description:
  */
 public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
+
     @Autowired
     private StringRedisTemplate redisTemplate;
-
-    public static final ThreadLocal<UserDetailsEntity> currentThreadUser = new ThreadLocal();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -42,12 +43,7 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
         // 判断请求头是否携带jwt
         if (StringUtils.isEmpty(jwt)) {
             // 放行
-            currentThreadUser.set(new UserDetailsEntity());
-            try {
-                filterChain.doFilter(request, response);
-            }finally {
-                currentThreadUser.remove();
-            }
+            filterChain.doFilter(request, response);
             return;
         }
         Claims claims;
@@ -55,14 +51,10 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
             claims = JwtUtils.parseJwt(UserModuleConstant.JWT_USER_SIGNATURE, jwt);
         }catch(ExpiredJwtException e){
             // token过期 放行
-            currentThreadUser.set(new UserDetailsEntity());
-            try {
-                filterChain.doFilter(request, response);
-            }finally {
-                currentThreadUser.remove();
-            }
+            filterChain.doFilter(request, response);
             return;
         } catch (Exception e) {
+            // jwt错误
             response.setHeader("Content-Type", "application/json");
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
@@ -82,16 +74,16 @@ public class CheckUserLoginStatusByJwtFilter extends OncePerRequestFilter {
             writer.close();
             return;
         }
-        // 将当前用户信息存入每个线程独有的ThreadLocal
         UserDetailsEntity userDetailsEntity = JSON.parseObject(userDetailsJson, new TypeReference<UserDetailsEntity>() {
         });
-        currentThreadUser.set(userDetailsEntity);
-        //存入SecurityContextHolder
+        // 将当前用户信息存入SecurityContextHolder
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(userDetailsEntity.getUser(), null, userDetailsEntity.getAuthorities());
-        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authenticationToken);
+        SecurityContextHolder.setContext(context);
+
         //放行
         filterChain.doFilter(request, response);
-        currentThreadUser.remove();
     }
 }

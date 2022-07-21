@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -79,6 +80,7 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
                     ExceptionContent.ACCOUNT_IS_NOT_EXISTED.getMessage());
         }
         // 密码登录
+
         boolean result = UserModuleConfig.USER_PASSWORD_ENCODER.matches(userLoginVo.getPassword(), user.getPassword());
         if (result) {
             return createJwtAndSaveUserIntoRedis(user);
@@ -151,10 +153,8 @@ public class UserLoginApiServiceImpl extends ServiceImpl<UserDao, UserPo> implem
 
     @Override
     public void logout(HttpServletRequest request) {
-        String jwt = request.getHeader(UserModuleConstant.JWT_TOKEN_HTTP_HEADER_KEY);
-        Claims claims = JwtUtils.parseJwt(UserModuleConstant.JWT_USER_SIGNATURE, jwt);
-        String userId = claims.get(UserModuleConstant.JWT_USER_KEY).toString();
-        redisTemplate.delete(UserModuleConstant.USER_KEY_PREFIX_IN_REDIS + userId);
+        UserPo user = (UserPo) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        redisTemplate.delete(UserModuleConstant.USER_KEY_PREFIX_IN_REDIS + user.getId());
     }
 
     @Override

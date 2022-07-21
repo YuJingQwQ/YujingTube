@@ -30,12 +30,8 @@ public class UserApiController {
 
     @GetMapping("/user/from/session")
     public R getUserFromSession() {
-        UserDetailsEntity userDetailsEntity = userApiService.getUserFromJwt();
-        if (userDetailsEntity == null) {
-            return R.ok().putData(null);
-        } else {
-            return R.ok().putData(userDetailsEntity.getUser());
-        }
+        UserPo user = userApiService.getUserFromJwt();
+        return user == null ? R.ok().putData(null) : R.ok().putData(user);
     }
 
     /**
