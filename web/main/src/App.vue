@@ -304,7 +304,9 @@ export default {
 
 <style>
 * {
-  box-sizing: border-box;
+  box-sizing: border-box ;
+  margin: 0 ;
+  padding: 0 ;
 }
 /* 设置滚动条的样式 */
 ::-webkit-scrollbar {
@@ -337,15 +339,11 @@ export default {
   text-decoration: none;
 }
 html {
-  margin: 0;
-  padding: 0;
   width: 100%;
   height: 100%;
 }
 body {
   background-color: #181818;
-  margin: 0;
-  padding: 0;
   width: 100%;
   height: 100%;
 }
@@ -357,8 +355,13 @@ body {
   flex-direction: column;
 }
 
+@media only screen and (max-width: 479px) {
+  .top-scope{
+    height: 48px !important;
+  }
+}
+
 .top-scope {
-  height: 56px;
   z-index: 100;
   margin: 0;
   padding: 0;
@@ -391,7 +394,6 @@ body {
   position: relative;
   width: 40px;
   height: 40px;
-  /*background-color: red;*/
 }
 
 /*菜单按钮*/
@@ -399,7 +401,9 @@ body {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  margin-top: 8px;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /*logo样式*/

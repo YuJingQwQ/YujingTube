@@ -257,8 +257,18 @@ export default {
 }
 @media only screen and (max-width: 479px) {
   :root {
-    --content-item-width: 94%;
+    --content-item-width: 306px;
     --content-item-height: 250px;
+  }
+  .logo-style-scope{
+    display: none;
+  }
+  #zone-scope-scope{
+    width: 96%;
+    justify-content: space-between;
+  }
+  .zone-scope{
+    margin: 0;
   }
 }
 .content-column {

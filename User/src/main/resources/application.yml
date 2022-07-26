@@ -73,3 +73,8 @@ dubbo:
     register-mode: instance
   registry:
     address: nacos://192.168.89.128:8848
+  protocol:
+    name: dubbo
+    port: -1
+  consumer:
+    check: true

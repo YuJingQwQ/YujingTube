@@ -271,8 +271,10 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
 
     @Override
     public List<PageVideoVo> listRandomlyByZoneIdLimitByCount(Long zoneId, Integer count) throws ExecutionException, InterruptedException {
+        // 从数据库查询count个并且对应分区的视频数据
         List<VideoPo> videos = videoDao.listRandomlyByZoneIdLimitByCount(zoneId, count);
         long[] videoIds = new long[videos.size()];
+        // 排除相同作者
         Set<Long> authorIdSet = new HashSet<>(videos.size());
         for (int i = 0; i < videos.size(); i++) {
             authorIdSet.add(videos.get(i).getUserId());
@@ -284,21 +286,8 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
             authorIds[i++] = authorId;
         }
         // 查询视频播放量
-        CompletableFuture<Map<Long, Long>> videoViewsMapFuture = CompletableFuture.supplyAsync(() -> this.multiGetViewsOrLikes(videoIds, 0), executor);
-
-        // 查询作者信息
-//        R<List<UserPo>> authorsR = userFeignService.getAvatarsAndNicknamesOfUsers(authorIds);
-//
-//        Map<Long, UserPo> authorsMap = null;
-//        if (authorsR.getCode() == 200) {
-//            List<UserPo> authors = authorsR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
-//            });
-//            authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
-//        } else {
-//            authorsMap = new HashMap<>();
-//        }
-//        Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
-//        Map<Long, UserPo> finalAuthorsMap = authorsMap;
+        CompletableFuture<Map<Long, Long>> videoViewsMapFuture =
+                CompletableFuture.supplyAsync(() -> this.multiGetViewsOrLikes(videoIds, 0), executor);
         // 查询作者信息
         List<UserPo> authors = userApiService.getAvatarsAndNicknamesOfUsers(authorIds);
         final Map<Long, UserPo> authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
