@@ -24,7 +24,7 @@
 |           [Spring Cloud](https://cloud.spring.io/)           |    微服务开发框架    |  Hoxton.SR12   |
 | [Spring Cloud Alibaba](https://spring.io/projects/spring-cloud-alibaba/) |    微服务开发框架    | 2.2.7.RELEASE  |
 |  [Dubbo](https://dubbo.incubator.apache.org/zh/index.html)   |       RPC框架        |     3.0.6      |
-|          [Nacos](https://github.com/alibaba/nacos)           |  服务注册与配置中心  | 2.2.7.RELEASE  |
+|          [Nacos](https://github.com/alibaba/nacos)           |  服务注册与配置中心  |     2.0.3      |
 |                  [Seata](https://seata.io/)                  |    分布式事务框架    |     1.3.0      |
 |              [MySQL](https://www.mysql.com/cn/)              |     数据库服务器     |      5.7       |
 |    [Dynamic Datasource](https://dynamic-datasource.com/)     |      动态数据源      |     3.5.0      |
