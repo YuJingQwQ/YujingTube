@@ -64,7 +64,7 @@ public class AuthorApiServiceImpl implements AuthorApiService {
         QueryWrapper<VideoPo> wrapper = new QueryWrapper<VideoPo>()
                 .eq("user_id", userId);
 
-        Query.order(authorArticlesPageVo.getOrderField(), authorArticlesPageVo.getOrderType(), Arrays.asList("uploading_date"), wrapper);
+        Query.order(authorArticlesPageVo.getOrderField(), authorArticlesPageVo.getOrderType(), VideoConstant.ALLOWED_VIDEO_ORDER_FIELDS, wrapper);
 
         if (authorArticlesPageVo.getStatus() != null) {
             wrapper.eq("status", authorArticlesPageVo.getStatus());
@@ -73,35 +73,7 @@ public class AuthorApiServiceImpl implements AuthorApiService {
             wrapper.eq("zone_id", authorArticlesPageVo.getZoneId());
         }
 
-        Page<VideoPo> pg = videoApiService.page(page, wrapper);
-        List<VideoPo> records = pg.getRecords();
-
-        // 获取所有视频的Id,用于从Redis中查询对应的视频播放量
-        long[] videoIds = new long[records.size()];
-        for (int i = 0; i < records.size(); i++) {
-            videoIds[i] = records.get(i).getId();
-        }
-
-        // 从Redis中查询对对应视频的播放量
-        Map<Long, Long> viewsMap = videoApiService.multiGetViewsOrLikes(videoIds, 0);
-        for (VideoPo record : records) {
-            record.setViews(viewsMap.get(record.getId()));
-        }
-
-        // 因为实时的播放量是放在Redis中的,所以不能再SQL中添加检索条件
-        if ("views".equals(authorArticlesPageVo.getOrderField())) {
-            if (authorArticlesPageVo.getOrderType() == 0) {
-                records.sort((current, next) ->
-                        (int) (next.getViews() - current.getViews())
-                );
-            } else {
-                records.sort((current, next) ->
-                        (int) (current.getViews() - next.getViews())
-                );
-
-            }
-        }
-        return pg;
+        return videoApiService.page(page, wrapper);
     }
 
 

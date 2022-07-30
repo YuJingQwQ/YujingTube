@@ -65,7 +65,7 @@
                   slot="dropdown"
                   class="sub-menu-sort-dropdown"
                 >
-                  <!-- <el-dropdown-item :command="{orderField:'views',orderType:0}">最多播放</el-dropdown-item> -->
+                  <el-dropdown-item :command="{orderField:'views',orderType:0}">最多播放</el-dropdown-item>
                   <el-dropdown-item
                     :command="{ orderField: 'releasing_date', orderType: 0 }"
                     >日期降序</el-dropdown-item

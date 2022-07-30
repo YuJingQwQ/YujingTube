@@ -54,9 +54,6 @@ public class AdminApiServiceImpl implements AdminApiService {
     @DubboReference()
     private UserApiService userApiService;
 
-//    @Autowired
-//    private UserFeignService userFeignService;
-
     @Override
     public Page<VideoPo> getArticlesOfAuthorsByAdmin(AuthorArticlesPageVo params) {
         // 固定 10个每页
@@ -64,7 +61,7 @@ public class AdminApiServiceImpl implements AdminApiService {
 
         QueryWrapper<VideoPo> wrapper = new QueryWrapper<>();
 
-        Query.order(params.getOrderField(), params.getOrderType(), Arrays.asList("uploading_date"), wrapper);
+        Query.order(params.getOrderField(), params.getOrderType(), VideoConstant.ALLOWED_VIDEO_ORDER_FIELDS, wrapper);
 
         if (params.getStatus() != null) {
             wrapper.eq("status", params.getStatus());
@@ -73,33 +70,7 @@ public class AdminApiServiceImpl implements AdminApiService {
             wrapper.eq("zone_id", params.getZoneId());
         }
 
-        Page<VideoPo> pg = videoApiService.page(page, wrapper);
-        List<VideoPo> records = pg.getRecords();
-        long[] videoIds = new long[records.size()];
-        for (int i = 0; i < records.size(); i++) {
-            videoIds[i] = records.get(i).getId();
-        }
-
-        Map<Long, Long> viewsMap = videoApiService.multiGetViewsOrLikes(videoIds, 0);
-
-        for (VideoPo record : records) {
-            record.setViews(viewsMap.get(record.getId()));
-        }
-
-        if ("views".equals(params.getOrderField())) {
-            if (params.getOrderType() == 0) {
-                records.sort((current, next) ->
-                        (int) (next.getViews() - current.getViews())
-                );
-
-            } else {
-                records.sort((current, next) ->
-                        (int) (current.getViews() - next.getViews())
-                );
-            }
-        }
-        return pg;
-
+        return videoApiService.page(page, wrapper);
     }
 
     @GlobalTransactional

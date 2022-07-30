@@ -9,9 +9,21 @@
         </set>
         WHERE id = #{videoId}
     </update>
+    <update id="synchronizeViewsAndLikesOfVideos">
+        <foreach collection="syns" item="syn" separator=";">
+            UPDATE product_video
+            <set>
+                <trim suffixOverrides=",">
+                    <if test="syn.views != null">views = views + #{syn.views} ,</if>
+                    <if test="syn.likes != null">likes = likes + #{syn.likes} ,</if>
+                </trim>
+            </set>
+            WHERE id = #{syn.videoId}
+        </foreach>
+    </update>
     <select id="listRandomlyByZoneIdLimitByCount"
             resultType="icu.yujing.product.app.product.entity.po.VideoPo">
-        SELECT id, user_id, title, type, zone_id, cover_url, releasing_date
+        SELECT id, user_id, title, type, zone_id, cover_url, views, releasing_date
         FROM product_video
         WHERE status = 2 and is_deleted = 0
         <if test="zoneId != null">
@@ -26,18 +38,27 @@
         cover_url,
         title,
         type,
+        views,
         description,
         releasing_date
         FROM product_video
         WHERE user_id = #{userId} AND is_deleted = 0
-        ORDER BY ${orderField}
-        <if test="orderType == 0">DESC</if>
-        <if test="orderType == 1">ASC</if>
+        <if test="orderField == 'views'">
+            ORDER BY ${orderField} DESC
+        </if>
+        <if test="orderField == 'releasing_date'">
+            ORDER BY ${orderField}
+            <if test="orderType == 0">DESC</if>
+            <if test="orderType == 1">ASC</if>
+        </if>
         LIMIT #{index},#{size}
     </select>
     <select id="listIdByIndexAndSize" resultType="long">
         SELECT id
-        from product_video WHERE is_deleted = 0 limit #{index},#{size}
+        from product_video
+        WHERE is_deleted = 0
+            LIMIT #{index}
+            , #{size}
     </select>
 
 </mapper>

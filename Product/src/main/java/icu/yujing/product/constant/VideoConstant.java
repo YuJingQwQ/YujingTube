@@ -29,7 +29,9 @@ public class VideoConstant {
     public static Long allowedVideoSliceFileSize = 10L;
     public static List<String> allowedVideoFileType = Arrays.asList("mp4", "flv", "mkv");
 
-//    public static List<String> allowedVideoOrderFields = Arrays.asList("uploading_date", "views");
+    public static final List<String> ALLOWED_VIDEO_ORDER_FIELDS = Arrays.asList("uploading_date", "views");
+
+    public static String VIDEO_DETAILS_LOCK = "videoDetailsLock";
 
     public static final String VIDEO_VIEWS_REDIS_KEY = "videos:views:";
     public static final String VIDEO_LIKES_REDIS_KEY = "videos:likes:";

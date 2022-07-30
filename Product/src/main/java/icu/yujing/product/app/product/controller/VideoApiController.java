@@ -46,23 +46,18 @@ public class VideoApiController {
         return R.ok().putData(video);
     }
 
+    /**
+     * 当视频点击播放时调用的接口
+     * 作用: 给当前视频增加播放量
+     * 待改进: 如果用户一直调用此接口将无限量增加播放量, 应该给予限制条件(如 每个用户只能给某个视频增加N个播放量等)
+     *
+     * @param videoId
+     * @return
+     */
     @GetMapping("/video/play/{videoId}")
     public R playVideo(@PathVariable("videoId") Long videoId) {
         videoApiService.videoPlay(videoId);
         return R.ok();
-    }
-
-    /**
-     * 获取视频对应的播放量或点赞数
-     *
-     * @param videoIds
-     * @param type     type == 0 获取视频播放量, type == 1 获取视频点赞数
-     * @return
-     */
-    @GetMapping("/video/multi_get_views_or_likes")
-    public R multiGetViewsOrLikes(@RequestParam("videoIds") long[] videoIds, @RequestParam("type") Integer type) {
-        Map<Long, Long> map = videoApiService.multiGetViewsOrLikes(videoIds, type);
-        return R.ok().putData(map);
     }
 
     static final List<String> ALLOWED_ORDER_FIELDS = Arrays.asList("views", "releasing_date");

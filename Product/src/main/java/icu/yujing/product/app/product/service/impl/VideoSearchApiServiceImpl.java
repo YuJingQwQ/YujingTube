@@ -2,8 +2,10 @@ package icu.yujing.product.app.product.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import icu.yujing.common.constant.ElasticsearchConstant;
+import icu.yujing.product.app.product.entity.po.VideoPo;
 import icu.yujing.product.app.product.entity.to.ElasticSearchVideoTo;
 import icu.yujing.product.app.product.service.VideoApiService;
 import icu.yujing.product.app.product.service.VideoSearchApiService;
@@ -21,9 +23,11 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * @author: Cyqurt
@@ -47,7 +51,7 @@ public class VideoSearchApiServiceImpl implements VideoSearchApiService {
         MatchQueryBuilder videoTitle = QueryBuilders.matchQuery("videoTitle", query);
         builder.query(videoTitle);
         // 当数据量多时再做打算
-        //TODO 前端传来 index(index = index + size)
+        // TODO 前端传来 index(index = index + size)
 //        builder.from(index);
 //        builder.size(10);
         SearchRequest searchRequest = new SearchRequest(ElasticsearchConstant.VIDEO_DATABASE);
@@ -61,19 +65,19 @@ public class VideoSearchApiServiceImpl implements VideoSearchApiService {
             return pg;
         }
 
-        long[] videoIds = new long[hits.getHits().length];
+        List<Long> videoIds = new ArrayList<>(hits.getHits().length);
         SearchHit[] hitsHits = hits.getHits();
         List<ElasticSearchVideoTo> videos = new ArrayList(hitsHits.length);
         for (int i = 0; i < hitsHits.length; i++) {
             ElasticSearchVideoTo elasticSearchVideoTo = JSON.parseObject(hitsHits[i].getSourceAsString(), new TypeReference<ElasticSearchVideoTo>() {
             });
-            videoIds[i] = elasticSearchVideoTo.getVideoId();
+            videoIds.add(elasticSearchVideoTo.getVideoId());
             videos.add(elasticSearchVideoTo);
         }
 
         // 查询视频播放量
-        Map<Long, Long> videoViewsMap = videoApiService.multiGetViewsOrLikes(videoIds, 0);
-
+        List<VideoPo> viewList = videoApiService.list(new QueryWrapper<VideoPo>().select("id", "views").in("id", videoIds));
+        Map<Long, Long> videoViewsMap = viewList.stream().collect(Collectors.toMap(VideoPo::getId, VideoPo::getViews));
         for (ElasticSearchVideoTo video : videos) {
             video.setVideoViews(videoViewsMap.get(video.getVideoId()));
         }

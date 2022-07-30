@@ -47,22 +47,16 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
     private RestHighLevelClient elasticsearchClient;
 
     @Autowired
-    private ThreadPoolExecutor executor;
-
-    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     @Autowired
     private RedissonClient redissonClient;
 
-    @DubboReference()
+    @DubboReference
     private UserApiService userApiService;
 
-//    @Autowired
-//    private UserFeignService userFeignService;
-
     @Override
-    public List<PageVideoVo> indexVideos() throws ExecutionException, InterruptedException {
+    public List<PageVideoVo> indexVideos() {
         List<VideoPo> videos = this.list(new QueryWrapper<VideoPo>()
                 .eq("status", ProductModuleConstant.VideoConstant.RELEASED));
 
@@ -77,29 +71,14 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         for (Long authorId : authorIdSet) {
             authorIds[i++] = authorId;
         }
-        // 查询视频播放量
-        CompletableFuture<Map<Long, Long>> videoViewsMapFuture = CompletableFuture.supplyAsync(() -> this.multiGetViewsOrLikes(videoIds, 0), executor);
-
-
-//        R<List<UserPo>> authorsR = userFeignService.getAvatarsAndNicknamesOfUsers(authorIds);
-
-//        Map<Long, UserPo> authorsMap = null;
-//        if (authorsR.getCode() == 200) {
-//            List<UserPo> authors = authorsR.getDataOfJsonObject(new TypeReference<List<UserPo>>() {
-//            });
-//            authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
-//        } else {
-//            authorsMap = new HashMap<>();
-//        }
 
         // 查询作者信息
         List<UserPo> authors = userApiService.getAvatarsAndNicknamesOfUsers(authorIds);
         final Map<Long, UserPo> authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
-        final Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
         return videos.stream().map(videoPo -> {
             UserPo author = authorsMap.get(videoPo.getUserId());
-            String authorNickname = null;
-            String authorAvatar = null;
+            String authorNickname;
+            String authorAvatar;
             if (author == null) {
                 authorNickname = "-";
                 authorAvatar = "https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png";
@@ -113,7 +92,7 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
                     , videoPo.getVideoUrl(),
                     videoPo.getTitle(),
                     videoPo.getType(),
-                    videoViewsMap.get(videoPo.getId()),
+                    videoPo.getViews(),
                     videoPo.getDescription(),
                     videoPo.getReleasingDate(),
                     videoPo.getZoneId(),
@@ -125,28 +104,34 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
     }
 
     @Override
-    public PageVideoVo getPageVideo(Long videoId) throws ExecutionException, InterruptedException {
+    public PageVideoVo getPageVideo(Long videoId) {
 
         Object videoObj = redisTemplate.opsForValue().get(VideoConstant.VIDEO_DETAILS_REDIS_KEY + videoId);
-        VideoPo videoPo = null;
+        VideoPo videoPo;
         if (StringUtils.isEmpty(videoObj)) {
-            // 查询此视频信息
-            //TODO 分布式锁 RedissonClient
-            videoPo = getById(videoId);
-            if (videoPo == null) {
-                throw new MyTopException(ExceptionContent.NO_SUCH_VIDEO.getCode(), ExceptionContent.NO_SUCH_VIDEO.getMessage());
+            // 分布式重量级锁 RedissonClient
+            RLock lock = redissonClient.getLock(VideoConstant.VIDEO_DETAILS_LOCK);
+            lock.lock();
+            videoObj = redisTemplate.opsForValue().get(VideoConstant.VIDEO_DETAILS_REDIS_KEY + videoId);
+            if (StringUtils.isEmpty(videoObj)) {
+                // 查询此视频信息
+                videoPo = getById(videoId);
+                if (videoPo == null) {
+                    throw new MyTopException(ExceptionContent.NO_SUCH_VIDEO.getCode(), ExceptionContent.NO_SUCH_VIDEO.getMessage());
+                }
+                redisTemplate.opsForValue().set(ProductModuleConstant.VideoConstant.VIDEO_DETAILS_REDIS_KEY + videoId,
+                        JSON.toJSONString(videoPo));
+            } else {
+                videoPo = JSON.parseObject(videoObj.toString(), new TypeReference<VideoPo>() {
+                });
             }
-            redisTemplate.opsForValue().set(ProductModuleConstant.VideoConstant.VIDEO_DETAILS_REDIS_KEY + videoId,
-                    JSON.toJSONString(videoPo));
+            lock.unlock();
         } else {
             videoPo = JSON.parseObject(videoObj.toString(), new TypeReference<VideoPo>() {
             });
         }
 
-        CompletableFuture<Long> VideoViewsFuture = CompletableFuture.supplyAsync(() ->
-                this.getVideoViewsOrLikes(videoId, 0), executor);
-
-        UserPo author = null;
+        UserPo author;
         try {
             author = userApiService.getUserFromDatabase(videoPo.getUserId());
         } catch (Exception e) {
@@ -155,27 +140,6 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
             author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
             author.setFansCount(0);
         }
-
-        // 获取作者信息
-//        R<UserPo> userR = userFeignService.getUserInfo(videoPo.getUserId());
-//        UserPo author = null;
-//        if (userR.getCode() == 200) {
-//            author = userR.getDataOfJsonObject(new TypeReference<UserPo>() {
-//            });
-//            if (author == null) {
-//                author = new UserPo();
-//                author.setNickname("用户已注销");
-//                author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
-//                author.setFansCount(0);
-//            }
-//
-//        } else {
-//            // 查询作者失败时,返回一个默认对象
-//            author = new UserPo();
-//            author.setNickname("查询失败");
-//            author.setAvatar("https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png");
-//            author.setFansCount(0);
-//        }
 
         PageVideoVo videoVo = new PageVideoVo();
         videoVo.setVideoId(videoPo.getId());
@@ -187,18 +151,17 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         videoVo.setVideoReleasingDate(videoPo.getReleasingDate());
         videoVo.setZoneId(videoPo.getZoneId());
         videoVo.setAuthorId(videoPo.getUserId());
+        videoVo.setVideoViews(videoPo.getViews());
         videoVo.setAuthorName(author.getNickname());
         videoVo.setAuthorAvatar(author.getAvatar());
         videoVo.setAuthorFansCount(author.getFansCount());
-
-        Long views = VideoViewsFuture.get();
-        videoVo.setVideoViews(views);
         return videoVo;
     }
 
     @Override
     public void videoPlay(Long videoId) {
-        this.videoViewsOrLikesIncrement(videoId, 0);
+        ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
+        opsForValue.increment(VideoConstant.VIDEO_VIEWS_REDIS_KEY + videoId, 1L);
     }
 
     @Override
@@ -229,7 +192,7 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         }
         if (noResultVideoIds.size() > 0) {
             // 查询没有数据的videoIds
-            List<VideoPo> videos = null;
+            List<VideoPo> videos;
             if (type == 0) {
                 videos = this.list(new QueryWrapper<VideoPo>()
                         .select("id", "views")
@@ -285,18 +248,15 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         for (Long authorId : authorIdSet) {
             authorIds[i++] = authorId;
         }
-        // 查询视频播放量
-        CompletableFuture<Map<Long, Long>> videoViewsMapFuture =
-                CompletableFuture.supplyAsync(() -> this.multiGetViewsOrLikes(videoIds, 0), executor);
         // 查询作者信息
         List<UserPo> authors = userApiService.getAvatarsAndNicknamesOfUsers(authorIds);
         final Map<Long, UserPo> authorsMap = authors.stream().collect(Collectors.toMap(UserPo::getId, userPo -> userPo));
-        final Map<Long, Long> videoViewsMap = videoViewsMapFuture.get();
         return videos.stream().map(videoPo -> {
             UserPo author = authorsMap.get(videoPo.getUserId());
             String authorNickname = null;
             String authorAvatar = null;
             if (author == null) {
+                // !魔法值!
                 authorNickname = "用户不存在";
                 authorAvatar = "https://yujing-youtube.oss-cn-guangzhou.aliyuncs.com/user/avatar/avatar.png";
             } else {
@@ -305,11 +265,11 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
             }
 
             return new PageVideoVo(videoPo.getId(),
-                    videoPo.getCoverUrl()
-                    , videoPo.getVideoUrl(),
+                    videoPo.getCoverUrl(),
+                    videoPo.getVideoUrl(),
                     videoPo.getTitle(),
                     videoPo.getType(),
-                    videoViewsMap.get(videoPo.getId()),
+                    videoPo.getViews(),
                     videoPo.getDescription(),
                     videoPo.getReleasingDate(),
                     videoPo.getZoneId(),
@@ -326,21 +286,14 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         if (videos == null || videos.size() == 0) {
             return new ArrayList<>(0);
         }
-        long[] videoIds = new long[videos.size()];
-        for (int i = 0; i < videoIds.length; i++) {
-            videoIds[i] = videos.get(i).getId();
-        }
-        // 查询每个视频的播放量
-        Map<Long, Long> videoViewsMap = this.multiGetViewsOrLikes(videoIds, 0);
         List<PageVideoVo> pageVideos = new ArrayList<>(videos.size());
-
         for (VideoPo video : videos) {
             PageVideoVo pageVideoVo = new PageVideoVo(video.getId(),
                     video.getCoverUrl(),
                     video.getVideoUrl(),
                     video.getTitle(),
                     video.getType(),
-                    videoViewsMap.get(video.getId()),
+                    video.getViews(),
                     video.getDescription(),
                     video.getReleasingDate(),
                     video.getZoneId(),
@@ -352,65 +305,4 @@ public class VideoApiServiceImpl extends ServiceImpl<VideoDao, VideoPo> implemen
         return pageVideos;
     }
 
-    @Override
-    public long[] listIdByIndexAndSize(long index, long size) {
-        return videoDao.listIdByIndexAndSize(index, size);
-    }
-
-    @Override
-    public Long getVideoViewsOrLikes(Long videoId, Integer type) {
-        ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
-        String key = null;
-        if (type == 0) {
-            key = VideoConstant.VIDEO_VIEWS_REDIS_KEY + videoId;
-        } else {
-            key = VideoConstant.VIDEO_LIKES_REDIS_KEY + videoId;
-        }
-
-        Object viewsOrLikes = opsForValue.get(key);
-        if (viewsOrLikes == null) {
-            // 使用分布式锁
-            RLock lock = redissonClient.getLock("getVideoViewsOrLikes:" + videoId);
-            lock.lock(5L, TimeUnit.SECONDS);
-
-            Object getViewsOrLikesFromCacheAgain = opsForValue.get(key);
-            if (getViewsOrLikesFromCacheAgain != null) {
-                lock.unlock();
-                viewsOrLikes = getViewsOrLikesFromCacheAgain;
-            } else {
-                if (type == 0) {
-                    VideoPo video = this.getOne(new QueryWrapper<VideoPo>()
-                            .select("views")
-                            .eq("id", videoId));
-                    if (video == null) {
-                        lock.unlock();
-                        throw new MyTopException(ExceptionContent.DIY_EXCEPTION.getCode(), "你在干什么?");
-                    }
-                    viewsOrLikes = video.getViews();
-                } else {
-                    VideoPo video = this.getOne(new QueryWrapper<VideoPo>()
-                            .select("likes")
-                            .eq("id", videoId));
-                    if (video == null) {
-                        lock.unlock();
-                        throw new MyTopException(ExceptionContent.DIY_EXCEPTION.getCode(), "你在干什么?");
-                    }
-                    viewsOrLikes = video.getLikes();
-                }
-                opsForValue.set(key, viewsOrLikes);
-                lock.unlock();
-            }
-        }
-        return Long.valueOf(String.valueOf(viewsOrLikes));
-    }
-
-    @Override
-    public void videoViewsOrLikesIncrement(Long videoId, Integer type) {
-        ValueOperations<String, Object> opsForValue = redisTemplate.opsForValue();
-        if (type == 0) {
-            opsForValue.increment(VideoConstant.VIDEO_VIEWS_REDIS_KEY + videoId, 1L);
-        } else {
-            opsForValue.increment(VideoConstant.VIDEO_LIKES_REDIS_KEY + videoId, 1L);
-        }
-    }
 }

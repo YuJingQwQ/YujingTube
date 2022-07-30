@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
  */
 @EnableDubbo(scanBasePackages = "icu.yujing.product")
 @EnableScheduling
-//@EnableDiscoveryClient
-//@EnableFeignClients(basePackages = "icu.yujing.product.feign")
 @EnableAutoDataSourceProxy
 @Configuration
 public class ProductModuleConfig {

@@ -2,10 +2,12 @@ package icu.yujing.product.app.product.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import icu.yujing.product.app.product.entity.po.VideoPo;
+import icu.yujing.product.app.product.schedule.VideoScheduleController;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author: Cyqurt
@@ -22,5 +24,8 @@ public interface VideoDao extends BaseMapper<VideoPo> {
 
     List<VideoPo> getTheVideosOfTheCurrentUser(@Param("userId") Long userId, @Param("index") Long index, @Param("size") Long size, @Param("orderField") String orderField, @Param("orderType") Integer orderType);
 
-    long[] listIdByIndexAndSize(@Param("index") long index, @Param("size") long size);
+    List<Long> listIdByIndexAndSize(@Param("index") long index, @Param("size") long size);
+
+
+    void synchronizeViewsAndLikesOfVideos(@Param("syns") List<VideoScheduleController.synchronizeVideoPO> syns);
 }

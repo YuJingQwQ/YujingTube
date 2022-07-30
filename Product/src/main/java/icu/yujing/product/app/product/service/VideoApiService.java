@@ -23,10 +23,6 @@ public interface VideoApiService extends IService<VideoPo> {
 
     void videoPlay(Long videoId);
 
-    Long getVideoViewsOrLikes(Long videoId, Integer type);
-
-    void videoViewsOrLikesIncrement(Long videoId, Integer type);
-
     /**
      *
      * @param videoIds
@@ -39,5 +35,4 @@ public interface VideoApiService extends IService<VideoPo> {
 
     List<PageVideoVo> getTheVideosOfTheCurrentUser(Long userId, Long index, Long size, String orderField, Integer orderType);
 
-    long[] listIdByIndexAndSize(long index, long size);
 }
