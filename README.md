@@ -1,7 +1,13 @@
 # YujingTube
 模仿 youtube与bilibili的练习用项目
 
-演示视频链接: https://wwt.lanzouf.com/ikRQz07wp2zc
+演示视频链接:
+
+https://pan.baidu.com/s/1OD9K3RxlvSGp69VOB_wyEQ?pwd=1234 提取码：1234
+
+https://wwt.lanzouf.com/ikRQz07wp2zc
+
+
 
 ## 技术栈
 
